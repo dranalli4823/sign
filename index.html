@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>David Ranalli: Sign Your Agreement</title>
+<style>body{font-family:Georgia,serif;background:#f4f2ee;color:#222;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}p{max-width:420px;text-align:center;font-size:18px;line-height:1.5;padding:24px}</style>
+</head><body><p id="msg">Loading your agreement...</p>
+<script>
+(function () {
+  // DR E-sign loader. Holds no data: it fetches the one agreement this link's token opens
+  // from the esign function, then becomes that page. Source of the page itself:
+  // ~/BookingHQ/_config/doc-templates/esign-page.html via integrations/esign/esign.py.
+  var FN = "https://gtgozdjfnwmnapuyndqd.supabase.co/functions/v1/esign/r/";
+  var q = new URLSearchParams(location.search), t = q.get("t") || location.pathname.replace(/^\/+|\/+$/g, "");
+  var msg = document.getElementById("msg");
+  if (!/^[A-Za-z0-9_-]{20,64}$/.test(t || "")) { msg.textContent = "This signing link is not complete. Please use the link from David's email."; return; }
+  fetch(FN + t, { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
+    if (!j.html) { msg.textContent = j.error || "This signing link is not valid."; return; }
+    var html = j.html;
+    if (j.status === "signed" && j.payload) {
+      html = html.replace(/<head>/i, "<head><script>window.__ESIGN_SIGNED=" +
+        JSON.stringify(j.payload).replace(/</g, "\\u003c") + ";<\/script>");
+    }
+    document.open(); document.write(html); document.close();
+  }).catch(function () { msg.textContent = "Could not load the agreement. Please refresh, or email david@davidranalli.com."; });
+})();
+</script></body></html>
